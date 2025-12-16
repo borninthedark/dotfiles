@@ -1,0 +1,208 @@
+#------------------------------------------------------------------------------
+# Zsh Configuration (Fedora Sway Atomic)
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# Core environment
+#------------------------------------------------------------------------------
+export EDITOR='nvim'
+export VISUAL='nvim'
+
+export GHCR_PAT=""
+export GHCR_USER="borninthedark"
+
+# Wayland/Sway environment variables
+export MOZ_ENABLE_WAYLAND=1
+export QT_QPA_PLATFORM=wayland
+export QT_QPA_PLATFORMTHEME=qt6ct
+export SDL_VIDEODRIVER=wayland
+export _JAVA_AWT_WM_NONREPARENTING=1
+
+#------------------------------------------------------------------------------
+# PATH
+#------------------------------------------------------------------------------
+[[ -d "$HOME/.local/bin" ]] && export PATH="$HOME/.local/bin:$PATH"
+[[ -d "$HOME/.cargo/bin" ]] && export PATH="$HOME/.cargo/bin:$PATH"
+
+#------------------------------------------------------------------------------
+# History
+#------------------------------------------------------------------------------
+HISTSIZE=10000
+SAVEHIST=10000
+HISTFILE="$HOME/.zsh_history"
+setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_REDUCE_BLANKS
+setopt INC_APPEND_HISTORY
+setopt SHARE_HISTORY
+
+#------------------------------------------------------------------------------
+# Completion
+#------------------------------------------------------------------------------
+autoload -Uz compinit
+compinit -d "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump" 2>/dev/null
+zstyle ':completion:*' use-cache on
+zstyle ':completion:*' cache-path "${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
+zstyle ':completion:*' menu select
+
+#------------------------------------------------------------------------------
+# Prompt: Starship
+#------------------------------------------------------------------------------
+if command -v starship >/dev/null 2>&1; then
+  eval "$(starship init zsh)"
+fi
+
+#------------------------------------------------------------------------------
+# Optional Zsh enhancements
+#------------------------------------------------------------------------------
+for _zsh_as in \
+  /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh \
+  /usr/local/share/zsh-autosuggestions/zsh-autosuggestions.zsh \
+  "$HOME/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh"
+do
+  [[ -r "$_zsh_as" ]] && source "$_zsh_as" && break
+done
+unset _zsh_as
+
+for _zsh_sh in \
+  /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh \
+  /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh \
+  "$HOME/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+do
+  [[ -r "$_zsh_sh" ]] && source "$_zsh_sh" && break
+done
+unset _zsh_sh
+
+#------------------------------------------------------------------------------
+# Aliases
+#------------------------------------------------------------------------------
+alias cls='clear'
+
+if command -v lsd >/dev/null 2>&1; then
+  alias ls='lsd'
+  alias l='lsd -l'
+  alias la='lsd -a'
+  alias lla='lsd -la'
+  alias lt='lsd --tree'
+fi
+
+if command -v bat >/dev/null 2>&1; then
+  alias cat='bat --paging=never'
+  alias less='bat'
+  export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+  export BAT_THEME="OneHalfDark"
+elif command -v batcat >/dev/null 2>&1; then
+  alias cat='batcat --paging=never'
+  alias bat='batcat'
+  alias less='batcat'
+fi
+
+if command -v fastfetch >/dev/null 2>&1; then
+  alias ff='fastfetch --logo fedora_small'
+fi
+
+if command -v direnv >/dev/null 2>&1; then
+  alias da='direnv allow'
+  alias dr='direnv reload'
+  alias ds='direnv status'
+fi
+
+if command -v podman >/dev/null 2>&1; then
+  command -v podman-compose >/dev/null 2>&1 && alias pc='podman-compose'
+  command -v podman-compose >/dev/null 2>&1 && alias pcu='podman-compose up -d'
+  command -v podman-compose >/dev/null 2>&1 && alias pcd='podman-compose down'
+  command -v podman-compose >/dev/null 2>&1 && alias pcl='podman-compose logs -f'
+  alias pps='podman ps'
+  alias ppa='podman ps -a'
+  alias pi='podman images'
+  alias prm='podman rm'
+  alias prmi='podman rmi'
+fi
+
+alias gst='git status'
+alias gco='git checkout'
+alias gcm='git commit -m'
+alias gp='git push'
+alias gl='git pull'
+
+if command -v kubectl >/dev/null 2>&1; then
+  alias k='kubectl'
+  alias kgp='kubectl get pods'
+  alias kgs='kubectl get services'
+  alias kgd='kubectl get deployments'
+fi
+
+#------------------------------------------------------------------------------
+# fzf
+#------------------------------------------------------------------------------
+if command -v fzf >/dev/null 2>&1; then
+  if command -v bat >/dev/null 2>&1; then
+    _fzf_preview='bat --color=always --style=numbers --line-range=:500 {}'
+  else
+    _fzf_preview='sed -n "1,200p" {}'
+  fi
+  export FZF_DEFAULT_OPTS="--height 40% --layout=reverse --border --preview \"${_fzf_preview}\""
+  
+  if command -v fd >/dev/null 2>&1; then
+    export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
+    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+    export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
+  fi
+  
+  for _fzf in \
+    /usr/share/fzf/shell/key-bindings.zsh \
+    /usr/share/fzf/shell/completion.zsh \
+    "$HOME/.fzf/shell/key-bindings.zsh" \
+    "$HOME/.fzf/shell/completion.zsh"
+  do
+    [[ -r "$_fzf" ]] && source "$_fzf"
+  done
+  unset _fzf _fzf_preview
+fi
+
+#------------------------------------------------------------------------------
+# direnv hook
+#------------------------------------------------------------------------------
+if command -v direnv >/dev/null 2>&1; then
+  eval "$(direnv hook zsh)"
+fi
+
+#------------------------------------------------------------------------------
+# zoxide
+#------------------------------------------------------------------------------
+if command -v zoxide >/dev/null 2>&1; then
+  eval "$(zoxide init zsh)"
+fi
+
+#------------------------------------------------------------------------------
+# atuin
+#------------------------------------------------------------------------------
+if command -v atuin >/dev/null 2>&1; then
+  eval "$(atuin init zsh)"
+fi
+
+#------------------------------------------------------------------------------
+# Functions
+#------------------------------------------------------------------------------
+mkcd() { mkdir -p -- "$1" && cd -- "$1"; }
+
+extract() {
+  if [[ -f "$1" ]]; then
+    case "$1" in
+      *.tar.bz2)   tar xjf "$1"    ;;
+      *.tar.gz)    tar xzf "$1"    ;;
+      *.bz2)       bunzip2 "$1"    ;;
+      *.rar)       unrar x "$1"    ;;
+      *.gz)        gunzip "$1"     ;;
+      *.tar)       tar xf "$1"     ;;
+      *.tbz2)      tar xjf "$1"    ;;
+      *.tgz)       tar xzf "$1"    ;;
+      *.zip)       unzip "$1"      ;;
+      *.Z)         uncompress "$1" ;;
+      *.7z)        7z x "$1"       ;;
+      *)           echo "'$1' cannot be extracted via extract()" ;;
+    esac
+  else
+    echo "'$1' is not a valid file"
+  fi
+}
+. "$HOME/.atuin/bin/env"

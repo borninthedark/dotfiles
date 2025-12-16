@@ -1,0 +1,164 @@
+/* Kripton GTK Palette (applied to existing LCARS variables for compatibility) */
+@define-color lcars-bg rgba(19, 21, 25, 1);                 /* dark */
+@define-color lcars-panel rgba(23, 26, 31, 1);              /* bg-alt */
+@define-color lcars-panel-elevated rgba(34, 38, 45, 1);     /* bg-tertiary */
+@define-color lcars-accent rgba(155, 191, 191, 1);          /* accent */
+@define-color lcars-accent-soft rgba(139, 181, 181, 1);     /* accent-dark */
+@define-color lcars-text rgba(224, 224, 224, 1);            /* light */
+@define-color lcars-text-muted rgba(124, 125, 128, 1);      /* muted */
+@define-color lcars-cyan rgba(124, 171, 171, 1);            /* accent-soft */
+@define-color lcars-link rgba(155, 191, 191, 1);            /* accent */
+@define-color lcars-lilac rgba(177, 98, 134, 1);            /* memory */
+@define-color lcars-success rgba(112, 175, 90, 1);          /* success */
+@define-color lcars-warning rgba(170, 75, 26, 1);           /* warning */
+@define-color lcars-critical rgba(183, 47, 29, 1);          /* critical */
+
+/* Themed Defines */
+@define-color cc-bg rgba(19, 21, 25, 0.92);
+@define-color noti-text-color @lcars-text;
+@define-color noti-border-color rgba(8, 9, 11, 0.55);
+@define-color noti-bg rgba(23, 26, 31, 0.92);
+@define-color noti-bg rgba(23, 26, 31, 0.92);
+@define-color noti-bg rgba(23, 26, 31, 0.92);
+@define-color noti-close-bg rgba(34, 38, 45, 0.55);
+@define-color noti-close-bg rgba(34, 38, 45, 0.55);
+@define-color bg-selected @lcars-accent;
+
+* {
+    font-family: 'Rajdhani', 'MapleMono NF Regular', FontAwesome, system-ui, monospace;
+    font-size: 13px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.notification-row {
+  outline: none;
+}
+
+.notification-row:focus,
+
+.notification {
+  border-radius: 12px;
+  margin: 8px 12px;
+  background: @noti-bg;
+  padding: 6px;
+  border: 1px solid @noti-border-color;
+  backdrop-filter: blur(16px) saturate(0.7);
+  box-shadow: 0 4px 17px rgba(10, 14, 20, 0.65), 0 1px 5px rgba(77, 95, 111, 0.14);
+}
+
+.critical {
+  background: @lcars-critical;
+  padding: 6px;
+  border-radius: 12px;
+  box-shadow: 0 0 13px rgba(184, 101, 113, 0.46), 0 4px 17px rgba(10, 14, 20, 0.65);
+  animation: pulse-critical 2s ease-in-out infinite;
+}
+
+@keyframes pulse-critical {
+  0%, 100% { box-shadow: 0 0 13px rgba(184, 101, 113, 0.46), 0 4px 17px rgba(10, 14, 20, 0.65); }
+  50% { box-shadow: 0 0 19px rgba(184, 101, 113, 0.64), 0 4px 17px rgba(10, 14, 20, 0.65); }
+}
+
+.notification-content {
+  background: transparent;
+  padding: 6px;
+  border-radius: 8px;
+}
+
+.close-button {
+  background: @noti-close-bg;
+  color: @noti-text-color;
+  padding: 0;
+  border-radius: 50%;
+  margin: 6px 10px;
+  min-width: 22px;
+  min-height: 22px;
+  border: 1px solid @noti-border-color;
+  box-shadow: inset 0 1px 2px rgba(216, 222, 229, 0.07);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.close-button:hover {
+  background: @noti-close-bg-hover;
+  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(163, 102, 111, 0.38), inset 0 1px 2px rgba(216, 222, 229, 0.13);
+}
+
+.notification-default-action,
+.notification-action {
+  padding: 6px;
+  margin: 0;
+  border: 1px solid @noti-border-color;
+  border-radius: 8px;
+  background: rgba(18, 24, 30, 0.72);
+  color: @noti-text-color;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.notification-default-action:hover,
+.notification-action:hover {
+  background: @noti-bg-hover;
+  border-color: @lcars-accent-soft;
+  box-shadow: 0 2px 9px rgba(163, 102, 111, 0.24), 0 1px 4px rgba(107, 122, 141, 0.16);
+  transform: translateY(-1px);
+}
+
+
+.summary,
+.time,
+.body,
+.top-action-title {
+  color: @noti-text-color;
+  text-shadow: none;
+}
+
+.control-center-clear-all {
+  color: @noti-text-color;
+  background: @cc-bg;
+  border: 1px solid @noti-border-color;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.control-center-clear-all:hover {
+  background: @noti-bg-hover;
+  border-color: @lcars-accent-soft;
+  box-shadow: 0 4px 13px rgba(163, 102, 111, 0.28), 0 1px 5px rgba(107, 122, 141, 0.22);
+  transform: translateY(-2px);
+}
+
+.control-center-dnd {
+  border-radius: 12px;
+  background: @noti-bg;
+  border: 1px solid @noti-border-color;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.control-center-dnd:checked {
+  background: @bg-selected;
+  border-color: @lcars-accent-soft;
+  box-shadow: 0 0 13px rgba(163, 102, 111, 0.32), inset 0 1px 2px rgba(216, 222, 229, 0.10);
+}
+
+.control-center {
+  background: @cc-bg;
+  border-radius: 16px;
+  padding: 10px;
+  border: 1px solid @noti-border-color;
+  backdrop-filter: blur(16px) saturate(0.75);
+  box-shadow: 0 12px 34px rgba(10, 14, 20, 0.78), 0 2px 9px rgba(77, 95, 111, 0.18);
+}
+
+.control-center-list,
+.floating-notifications {
+  background: transparent;
+}
+
+.blank-window {
+  background: rgba(13, 20, 25, 0.42);
+  backdrop-filter: blur(12px) saturate(0.8);
+}
+
