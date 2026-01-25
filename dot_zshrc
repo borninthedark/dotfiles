@@ -36,6 +36,22 @@ setopt INC_APPEND_HISTORY
 setopt SHARE_HISTORY
 
 #------------------------------------------------------------------------------
+# Key bindings (Home/End support)
+#------------------------------------------------------------------------------
+# Bind Home and End keys for different terminal emulators
+bindkey '^[[H'    beginning-of-line   # Home
+bindkey '^[[F'    end-of-line         # End
+bindkey '^[[1~'   beginning-of-line   # Home (alternative)
+bindkey '^[[4~'   end-of-line         # End (alternative)
+bindkey '^[[7~'   beginning-of-line   # Home (alternative)
+bindkey '^[[8~'   end-of-line         # End (alternative)
+
+# Additional useful key bindings
+bindkey '^[[3~'   delete-char         # Delete
+bindkey '^[[5~'   up-line-or-history  # Page Up
+bindkey '^[[6~'   down-line-or-history # Page Down
+
+#------------------------------------------------------------------------------
 # Completion
 #------------------------------------------------------------------------------
 autoload -Uz compinit
