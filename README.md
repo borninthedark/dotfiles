@@ -57,15 +57,15 @@ Qt6 dark theme so Qt apps match GTK. Atuin stores shell history locally with def
 
 All configs share a consistent dark palette:
 
-| Role       | Hex       |
-|------------|-----------|
-| Background | `#131519` |
-| Surface    | `#171a1f` |
-| Text       | `#e0e0e0` |
-| Accent     | `#9bbfbf` |
-| Success    | `#70af5a` |
-| Warning    | `#aa4b1a` |
-| Critical   | `#b72f1d` |
+| Role       | Color                                                            | Hex       |
+|------------|------------------------------------------------------------------|-----------|
+| Background | ![#131519](https://via.placeholder.com/20/131519/131519.png?text=+) | `#131519` |
+| Surface    | ![#171a1f](https://via.placeholder.com/20/171a1f/171a1f.png?text=+) | `#171a1f` |
+| Text       | ![#e0e0e0](https://via.placeholder.com/20/e0e0e0/e0e0e0.png?text=+) | `#e0e0e0` |
+| Accent     | ![#9bbfbf](https://via.placeholder.com/20/9bbfbf/9bbfbf.png?text=+) | `#9bbfbf` |
+| Success    | ![#70af5a](https://via.placeholder.com/20/70af5a/70af5a.png?text=+) | `#70af5a` |
+| Warning    | ![#aa4b1a](https://via.placeholder.com/20/aa4b1a/aa4b1a.png?text=+) | `#aa4b1a` |
+| Critical   | ![#b72f1d](https://via.placeholder.com/20/b72f1d/b72f1d.png?text=+) | `#b72f1d` |
 
 ## Exousia integration
 
