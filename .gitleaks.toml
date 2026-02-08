@@ -1,0 +1,15 @@
+[extend]
+useDefault = true
+
+[[rules]]
+id = "shell-export-secrets"
+description = "Exported secrets in shell configs (PAT, TOKEN, SECRET, KEY, PASSWORD)"
+regex = '''export\s+(GHCR_PAT|GH_TOKEN|GITHUB_TOKEN|[A-Z_]*(SECRET|PASSWORD|CREDENTIAL|API_KEY))\s*=\s*".+"'''
+tags = ["dotfiles", "shell"]
+
+[allowlist]
+paths = [
+  ".gitleaks.toml",
+  ".pre-commit-config.yaml",
+  "pyproject.toml",
+]
