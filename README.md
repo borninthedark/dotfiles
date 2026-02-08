@@ -57,15 +57,15 @@ Qt6 dark theme so Qt apps match GTK. Atuin stores shell history locally with def
 
 All configs share a consistent dark palette:
 
-| Role       | Color                                                            | Hex       |
-|------------|------------------------------------------------------------------|-----------|
-| Background | ![#131519](https://via.placeholder.com/20/131519/131519.png?text=+) | `#131519` |
-| Surface    | ![#171a1f](https://via.placeholder.com/20/171a1f/171a1f.png?text=+) | `#171a1f` |
-| Text       | ![#e0e0e0](https://via.placeholder.com/20/e0e0e0/e0e0e0.png?text=+) | `#e0e0e0` |
-| Accent     | ![#9bbfbf](https://via.placeholder.com/20/9bbfbf/9bbfbf.png?text=+) | `#9bbfbf` |
-| Success    | ![#70af5a](https://via.placeholder.com/20/70af5a/70af5a.png?text=+) | `#70af5a` |
-| Warning    | ![#aa4b1a](https://via.placeholder.com/20/aa4b1a/aa4b1a.png?text=+) | `#aa4b1a` |
-| Critical   | ![#b72f1d](https://via.placeholder.com/20/b72f1d/b72f1d.png?text=+) | `#b72f1d` |
+| Role       | Color                                        | Hex       |
+|------------|----------------------------------------------|-----------|
+| Background | ![background](assets/colors/background.svg)  | `#131519` |
+| Surface    | ![surface](assets/colors/surface.svg)        | `#171a1f` |
+| Text       | ![text](assets/colors/text.svg)              | `#e0e0e0` |
+| Accent     | ![accent](assets/colors/accent.svg)          | `#9bbfbf` |
+| Success    | ![success](assets/colors/success.svg)        | `#70af5a` |
+| Warning    | ![warning](assets/colors/warning.svg)        | `#aa4b1a` |
+| Critical   | ![critical](assets/colors/critical.svg)      | `#b72f1d` |
 
 ## Exousia integration
 
@@ -80,3 +80,9 @@ file-conflict-policy: replace
 ```
 
 See the [exousia chezmoi module docs](https://github.com/borninthedark/exousia) for all configuration options including update intervals, per-user enablement, and init/update service controls.
+
+## Acknowledgements
+
+- Color scheme based on the [Kripton](https://github.com/EliverLara/Kripton) GTK theme
+
+<!-- Add more acknowledgements here -->
