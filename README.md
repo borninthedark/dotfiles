@@ -84,5 +84,7 @@ See the [exousia chezmoi module docs](https://github.com/borninthedark/exousia) 
 ## Acknowledgements
 
 - Color scheme based on the [Kripton](https://github.com/EliverLara/Kripton) GTK theme
+- System font is [Maple Mono NF](https://github.com/subframe7536/maple-font)
+- System icons are the Summer variant of [Cyberpunk Technotronic](https://github.com/dreifacherspass/cyberpunk-technotronic-icon-theme)
 
 <!-- Add more acknowledgements here -->
