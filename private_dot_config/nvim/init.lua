@@ -6,7 +6,7 @@
 -- Bootstrap lazy.nvim
 -- ============================================================================
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not vim.loop.fs_stat(lazypath) then
+if not vim.uv.fs_stat(lazypath) then
   vim.fn.system({
     "git",
     "clone",
@@ -94,8 +94,7 @@ opt.fileencodings = "utf-8,gbk,chinese,cp936,gb18030,utf-16le,utf-16,big5,euc-jp
 
 -- Folding
 opt.foldmethod = "expr"
-opt.foldexpr = "nvim_treesitter#foldexpr()"
-opt.foldlevel = 99
+opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 opt.foldlevelstart = 99
 opt.foldenable = true
 
@@ -111,6 +110,28 @@ opt.history = 2000
 opt.synmaxcol = 250
 opt.virtualedit = "block"
 opt.formatoptions = "1jcroql"
+
+-- ============================================================================
+-- Filetype-specific settings
+-- ============================================================================
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "python",
+  callback = function()
+    vim.bo.shiftwidth = 4
+    vim.bo.tabstop = 4
+    vim.bo.softtabstop = 4
+    vim.bo.textwidth = 88  -- black/ruff default
+  end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "yaml",
+  callback = function()
+    vim.bo.shiftwidth = 2
+    vim.bo.tabstop = 2
+    vim.bo.softtabstop = 2
+  end,
+})
 
 -- ============================================================================
 -- Key mappings
@@ -170,15 +191,35 @@ keymap.set("n", "<leader>y", ":%y+<CR>", { desc = "Copy entire buffer" })
 -- Change directory
 keymap.set("n", "<leader>cd", ":cd %:p:h<CR>:pwd<CR>", { desc = "Change to buffer directory" })
 
--- Better insert mode navigation
+-- Better insert mode navigation (C-j/C-k reserved for cmp navigation)
 keymap.set("i", "<C-h>", "<Left>", { desc = "Move left" })
 keymap.set("i", "<C-l>", "<Right>", { desc = "Move right" })
-keymap.set("i", "<C-j>", "<Down>", { desc = "Move down" })
-keymap.set("i", "<C-k>", "<Up>", { desc = "Move up" })
 
 -- Text case conversion
 keymap.set("i", "<C-u>", "<Esc>viwUea", { desc = "Uppercase word" })
 keymap.set("i", "<C-t>", "<Esc>b~lea", { desc = "Title case word" })
+
+-- ============================================================================
+-- LSP keybindings (via LspAttach autocmd)
+-- ============================================================================
+vim.api.nvim_create_autocmd("LspAttach", {
+  desc = "LSP buffer keymaps",
+  callback = function(args)
+    local bufnr = args.buf
+    local function map(key, fn, desc)
+      vim.keymap.set("n", key, fn, { buffer = bufnr, noremap = true, silent = true, desc = desc })
+    end
+
+    map("gD", vim.lsp.buf.declaration, "Go to declaration")
+    map("gd", vim.lsp.buf.definition, "Go to definition")
+    map("K", vim.lsp.buf.hover, "Hover documentation")
+    map("gr", vim.lsp.buf.references, "Go to references")
+    map("gi", vim.lsp.buf.implementation, "Go to implementation")
+    map("<leader>rn", vim.lsp.buf.rename, "Rename symbol")
+    map("<leader>ca", vim.lsp.buf.code_action, "Code action")
+    map("<leader>f", function() vim.lsp.buf.format({ async = true }) end, "Format buffer")
+  end,
+})
 
 -- ============================================================================
 -- Plugin setup
@@ -245,70 +286,39 @@ require("lazy").setup({
     end,
   },
 
-  -- LSP
+  -- Schema store for JSON/YAML
+  { "b0o/SchemaStore.nvim", lazy = true },
+
+  -- LSP (native Neovim 0.11+ via vim.lsp.config/enable)
+  { "neovim/nvim-lspconfig" },
   {
-    "neovim/nvim-lspconfig",
-    event = { "BufReadPre", "BufNewFile" },
+    "mason-org/mason.nvim",
+    opts = {
+      ui = {
+        border = "rounded",
+        icons = {
+          package_installed = "✓",
+          package_pending = "➜",
+          package_uninstalled = "✗",
+        },
+      },
+    },
+  },
+  {
+    "mason-org/mason-lspconfig.nvim",
     dependencies = {
-      "williamboman/mason.nvim",
-      "williamboman/mason-lspconfig.nvim",
+      "mason-org/mason.nvim",
+      "neovim/nvim-lspconfig",
       "hrsh7th/cmp-nvim-lsp",
     },
     config = function()
-      require("mason").setup({
-        ui = {
-          border = "rounded",
-          icons = {
-            package_installed = "✓",
-            package_pending = "➜",
-            package_uninstalled = "✗",
-          },
-        },
+      -- Global capabilities for nvim-cmp completion
+      vim.lsp.config("*", {
+        capabilities = require("cmp_nvim_lsp").default_capabilities(),
       })
 
-      require("mason-lspconfig").setup({
-        ensure_installed = {
-          "lua_ls",
-          "pyright",
-          "rust_analyzer",
-          "clangd",
-          "bashls",
-          "jsonls",
-          "yamlls",
-          "marksman",
-        },
-        automatic_installation = true,
-      })
-
-      local lspconfig = require("lspconfig")
-      local capabilities = require("cmp_nvim_lsp").default_capabilities()
-
-      local on_attach = function(client, bufnr)
-        local opts = { buffer = bufnr, noremap = true, silent = true }
-        vim.keymap.set("n", "gD", vim.lsp.buf.declaration, opts)
-        vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
-        vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-        vim.keymap.set("n", "gi", vim.lsp.buf.implementation, opts)
-        vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
-        vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
-        vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
-        vim.keymap.set("n", "<leader>f", function()
-          vim.lsp.buf.format({ async = true })
-        end, opts)
-      end
-
-      local servers = { "lua_ls", "pyright", "rust_analyzer", "clangd", "bashls", "jsonls", "yamlls", "marksman" }
-
-      for _, lsp in ipairs(servers) do
-        lspconfig[lsp].setup({
-          on_attach = on_attach,
-          capabilities = capabilities,
-        })
-      end
-
-      lspconfig.lua_ls.setup({
-        on_attach = on_attach,
-        capabilities = capabilities,
+      -- Server-specific settings
+      vim.lsp.config("lua_ls", {
         settings = {
           Lua = {
             diagnostics = { globals = { "vim" } },
@@ -319,6 +329,59 @@ require("lazy").setup({
             telemetry = { enable = false },
           },
         },
+      })
+
+      vim.lsp.config("pyright", {
+        settings = {
+          pyright = { disableOrganizeImports = true }, -- ruff handles this
+          python = {
+            analysis = {
+              typeCheckingMode = "basic",
+              autoImportCompletions = true,
+              diagnosticSeverityOverrides = {
+                reportUnusedImport = "none", -- ruff handles this
+              },
+            },
+          },
+        },
+      })
+
+      vim.lsp.config("ruff", {
+        init_options = {
+          settings = {
+            lineLength = 88,
+          },
+        },
+      })
+
+      vim.lsp.config("yamlls", {
+        settings = {
+          yaml = {
+            schemaStore = { enable = false, url = "" },
+            schemas = require("schemastore").yaml.schemas(),
+            validate = true,
+            completion = true,
+            hover = true,
+          },
+        },
+      })
+
+      vim.lsp.config("jsonls", {
+        settings = {
+          json = {
+            schemas = require("schemastore").json.schemas(),
+            validate = { enable = true },
+          },
+        },
+      })
+
+      -- Auto-install and enable servers
+      require("mason-lspconfig").setup({
+        ensure_installed = {
+          "lua_ls", "pyright", "ruff", "rust_analyzer", "clangd",
+          "bashls", "jsonls", "yamlls", "marksman",
+        },
+        automatic_enable = true,
       })
     end,
   },
@@ -407,44 +470,47 @@ require("lazy").setup({
     end,
   },
 
-  -- Treesitter
+  -- Treesitter (new main branch API)
   {
     "nvim-treesitter/nvim-treesitter",
+    lazy = false,
     build = ":TSUpdate",
-    event = { "BufReadPost", "BufNewFile" },
-    dependencies = { "nvim-treesitter/nvim-treesitter-textobjects" },
     config = function()
-      require("nvim-treesitter.configs").setup({
-        ensure_installed = {
-          "lua", "python", "rust", "c", "cpp", "bash",
-          "json", "yaml", "toml", "markdown", "markdown_inline", "vim", "vimdoc",
-        },
-        sync_install = false,
-        auto_install = true,
-        highlight = { enable = true, additional_vim_regex_highlighting = false },
-        indent = { enable = true },
-        incremental_selection = {
-          enable = true,
-          keymaps = {
-            init_selection = "<CR>",
-            node_incremental = "<CR>",
-            scope_incremental = "<S-CR>",
-            node_decremental = "<BS>",
-          },
-        },
-        textobjects = {
-          select = {
-            enable = true,
-            lookahead = true,
-            keymaps = {
-              ["af"] = "@function.outer",
-              ["if"] = "@function.inner",
-              ["ac"] = "@class.outer",
-              ["ic"] = "@class.inner",
-            },
-          },
+      require("nvim-treesitter").setup({})
+      require("nvim-treesitter").install({
+        "lua", "python", "rust", "c", "cpp", "bash",
+        "json", "yaml", "toml", "markdown", "markdown_inline", "vim", "vimdoc",
+      })
+      vim.api.nvim_create_autocmd("FileType", {
+        desc = "Enable treesitter highlighting and indentation",
+        callback = function(ev)
+          if pcall(vim.treesitter.start, ev.buf) then
+            vim.bo[ev.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+          end
+        end,
+      })
+    end,
+  },
+  {
+    "nvim-treesitter/nvim-treesitter-textobjects",
+    branch = "main",
+    dependencies = { "nvim-treesitter/nvim-treesitter" },
+    config = function()
+      require("nvim-treesitter-textobjects").setup({
+        select = {
+          lookahead = true,
+          include_surrounding_whitespace = false,
         },
       })
+      local ts_select = function(query)
+        return function()
+          require("nvim-treesitter-textobjects.select").select_textobject(query, "textobjects")
+        end
+      end
+      vim.keymap.set({ "x", "o" }, "af", ts_select("@function.outer"), { desc = "Select outer function" })
+      vim.keymap.set({ "x", "o" }, "if", ts_select("@function.inner"), { desc = "Select inner function" })
+      vim.keymap.set({ "x", "o" }, "ac", ts_select("@class.outer"), { desc = "Select outer class" })
+      vim.keymap.set({ "x", "o" }, "ic", ts_select("@class.inner"), { desc = "Select inner class" })
     end,
   },
 
@@ -499,6 +565,7 @@ require("lazy").setup({
   {
     "ibhagwan/fzf-lua",
     dependencies = { "nvim-tree/nvim-web-devicons" },
+    cmd = "FzfLua",
     keys = {
       { "<leader>ff", "<cmd>FzfLua files<cr>", desc = "Find files" },
       { "<leader>fg", "<cmd>FzfLua live_grep<cr>", desc = "Grep text" },
@@ -519,14 +586,14 @@ require("lazy").setup({
   {
     "folke/which-key.nvim",
     event = "VeryLazy",
-    opts = { window = { border = "rounded" } },
+    opts = { win = { border = "rounded" } },
   },
 
   -- Dashboard
   {
     "goolord/alpha-nvim",
     event = "VimEnter",
-    opts = function()
+    config = function()
       local dashboard = require("alpha.themes.dashboard")
       dashboard.section.header.val = {
         "███╗   ██╗███████╗ ██████╗ ██╗   ██╗██╗███╗   ███╗",
@@ -544,7 +611,7 @@ require("lazy").setup({
         dashboard.button("c", " " .. " Config", ":e $MYVIMRC <CR>"),
         dashboard.button("q", " " .. " Quit", ":qa<CR>"),
       }
-      return dashboard
+      require("alpha").setup(dashboard.config)
     end,
   },
 
@@ -609,6 +676,28 @@ require("lazy").setup({
     },
   },
 
+  -- Formatting
+  {
+    "stevearc/conform.nvim",
+    event = "BufWritePre",
+    cmd = "ConformInfo",
+    keys = {
+      { "<leader>cf", function() require("conform").format({ async = true }) end, desc = "Format buffer" },
+    },
+    opts = {
+      formatters_by_ft = {
+        python = { "ruff_organize_imports", "ruff_format" },
+        yaml = { "prettier" },
+        json = { "prettier" },
+        lua = { "stylua" },
+      },
+      format_on_save = {
+        timeout_ms = 3000,
+        lsp_format = "fallback",
+      },
+    },
+  },
+
   -- Auto pairs
   {
     "windwp/nvim-autopairs",
@@ -641,7 +730,7 @@ require("lazy").setup({
 
   -- Hop (fast cursor movement)
   {
-    "phaazon/hop.nvim",
+    "smoka7/hop.nvim",
     keys = {
       { "s", "<cmd>HopChar2<cr>", desc = "Hop to 2 chars" },
       { "S", "<cmd>HopWord<cr>", desc = "Hop to word" },
