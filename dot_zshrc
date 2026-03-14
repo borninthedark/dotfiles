@@ -10,6 +10,7 @@ export VISUAL='nvim'
 
 export GHCR_PAT=""
 export GHCR_USER="borninthedark"
+export GITHUB_USERNAME="borninthedark"
 
 # Wayland/Sway environment variables
 export MOZ_ENABLE_WAYLAND=1
@@ -132,6 +133,17 @@ if command -v podman >/dev/null 2>&1; then
   alias pi='podman images'
   alias prm='podman rm'
   alias prmi='podman rmi'
+  # Pull AWS CLI image if not present
+  podman image exists public.ecr.aws/aws-cli/aws-cli || podman pull public.ecr.aws/aws-cli/aws-cli
+  # AWS CLI via podman — passes all AWS_* env vars from the shell
+  aws() {
+    podman run --rm -it \
+      --network=host \
+      -v ~/.aws:/root/.aws:z \
+      -v "$(pwd)":/aws:z \
+      $(env | grep ^AWS_ | sed 's/^/-e /') \
+      public.ecr.aws/aws-cli/aws-cli "$@"
+  }
 fi
 
 alias gst='git status'
@@ -190,13 +202,6 @@ if command -v zoxide >/dev/null 2>&1; then
 fi
 
 #------------------------------------------------------------------------------
-# atuin
-#------------------------------------------------------------------------------
-if command -v atuin >/dev/null 2>&1; then
-  eval "$(atuin init zsh)"
-fi
-
-#------------------------------------------------------------------------------
 # Functions
 #------------------------------------------------------------------------------
 mkcd() { mkdir -p -- "$1" && cd -- "$1"; }
@@ -221,4 +226,18 @@ extract() {
     echo "'$1' is not a valid file"
   fi
 }
-. "$HOME/.atuin/bin/env"
+
+#------------------------------------------------------------------------------
+# nvm
+#------------------------------------------------------------------------------
+export NVM_DIR="$HOME/.nvm"
+[[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
+[[ -s "$NVM_DIR/bash_completion" ]] && source "$NVM_DIR/bash_completion"
+
+#------------------------------------------------------------------------------
+# atuin
+#------------------------------------------------------------------------------
+[[ -f "$HOME/.atuin/bin/env" ]] && source "$HOME/.atuin/bin/env"
+if command -v atuin >/dev/null 2>&1; then
+  eval "$(atuin init zsh)"
+fi
