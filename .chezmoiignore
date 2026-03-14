@@ -1,0 +1,4 @@
+# LLM agent context files — local only, never committed
+CLAUDE.md
+GEMINI.md
+AGENTS.md

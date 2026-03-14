@@ -1,5 +1,5 @@
 # Pre-commit hooks for dotfiles hygiene
-# Install: uv run pre-commit install
+# Install: uv run pre-commit install && uv run pre-commit install --hook-type commit-msg
 # Run:     uv run pre-commit run --all-files
 
 repos:
@@ -37,7 +37,7 @@ repos:
 
   # Secret scanning
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.21.2
+    rev: v8.22.1
     hooks:
       - id: gitleaks
 
@@ -47,3 +47,11 @@ repos:
     hooks:
       - id: markdownlint
         args: [--fix]
+
+  # Conventional commit enforcement (install: pre-commit install --hook-type commit-msg)
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v4.0.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: [feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert]

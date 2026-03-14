@@ -1,3 +1,5 @@
+title = "Chezmoi Dotfiles Gitleaks Configuration"
+
 [extend]
 useDefault = true
 
@@ -8,8 +10,9 @@ regex = '''export\s+(GHCR_PAT|GH_TOKEN|GITHUB_TOKEN|[A-Z_]*(SECRET|PASSWORD|CRED
 tags = ["dotfiles", "shell"]
 
 [allowlist]
+description = "Global allowlist"
 paths = [
   ".gitleaks.toml",
   ".pre-commit-config.yaml",
-  "pyproject.toml",
+  '''\.lock$''',
 ]
