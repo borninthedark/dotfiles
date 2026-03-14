@@ -31,8 +31,9 @@ local opt = vim.opt
 opt.number = true
 opt.relativenumber = true
 opt.cursorline = true
+opt.cursorcolumn = true
 opt.signcolumn = "yes"
-opt.colorcolumn = "100"
+opt.colorcolumn = ""
 opt.showmode = false
 opt.showcmd = true
 opt.cmdheight = 1
@@ -114,6 +115,26 @@ opt.formatoptions = "1jcroql"
 -- ============================================================================
 -- Filetype-specific settings
 -- ============================================================================
+local crosshair_group = vim.api.nvim_create_augroup("cursor_crosshair", { clear = true })
+
+vim.api.nvim_create_autocmd({ "VimEnter", "WinEnter", "BufEnter" }, {
+  group = crosshair_group,
+  desc = "Enable cursor crosshair in the active window",
+  callback = function()
+    vim.wo.cursorline = true
+    vim.wo.cursorcolumn = true
+  end,
+})
+
+vim.api.nvim_create_autocmd("WinLeave", {
+  group = crosshair_group,
+  desc = "Disable cursor crosshair in inactive windows",
+  callback = function()
+    vim.wo.cursorline = false
+    vim.wo.cursorcolumn = false
+  end,
+})
+
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "python",
   callback = function()
@@ -278,6 +299,7 @@ require("lazy").setup({
       vim.cmd.colorscheme("gruvbox-material")
 
       vim.api.nvim_set_hl(0, "CursorLine", { bg = "#22262d" })
+      vim.api.nvim_set_hl(0, "CursorColumn", { bg = "#1f2329" })
       vim.api.nvim_set_hl(0, "CursorLineNr", { fg = "#9bbfbf", bold = true })
       vim.api.nvim_set_hl(0, "Visual", { bg = "#22262d" })
       vim.api.nvim_set_hl(0, "Search", { bg = "#9bbfbf", fg = "#131519" })
