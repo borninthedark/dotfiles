@@ -1,3 +1,6 @@
+# Secrets — local only, never committed
+.envrc
+
 # LLM agent context files — local only, never committed
 CLAUDE.md
 GEMINI.md

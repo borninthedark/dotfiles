@@ -3,23 +3,6 @@
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
-# Core environment
-#------------------------------------------------------------------------------
-export EDITOR='nvim'
-export VISUAL='nvim'
-
-export GHCR_PAT=""
-export GHCR_USER="borninthedark"
-export GITHUB_USERNAME="borninthedark"
-
-# Wayland/Sway environment variables
-export MOZ_ENABLE_WAYLAND=1
-export QT_QPA_PLATFORM=wayland
-export QT_QPA_PLATFORMTHEME=qt6ct
-export SDL_VIDEODRIVER=wayland
-export _JAVA_AWT_WM_NONREPARENTING=1
-
-#------------------------------------------------------------------------------
 # PATH
 #------------------------------------------------------------------------------
 [[ -d "$HOME/.local/bin" ]] && export PATH="$HOME/.local/bin:$PATH"
@@ -135,15 +118,47 @@ if command -v podman >/dev/null 2>&1; then
   alias prmi='podman rmi'
   # Pull AWS CLI image if not present
   podman image exists public.ecr.aws/aws-cli/aws-cli || podman pull public.ecr.aws/aws-cli/aws-cli
-  # AWS CLI via podman — passes all AWS_* env vars from the shell
+  # AWS CLI via podman — disables SELinux labeling because relabeling under $HOME is forbidden
   aws() {
     podman run --rm -it \
       --network=host \
-      -v ~/.aws:/root/.aws:z \
-      -v "$(pwd)":/aws:z \
+      --security-opt label=disable \
+      -v ~/.aws:/root/.aws \
+      -v "$(pwd)":/aws \
       $(env | grep ^AWS_ | sed 's/^/-e /') \
       public.ecr.aws/aws-cli/aws-cli "$@"
   }
+  # Pull Terraform image if not present
+  podman image exists docker.io/hashicorp/terraform || podman pull docker.io/hashicorp/terraform
+  # Terraform via podman — disables SELinux labeling because relabeling under $HOME is forbidden
+  terraform() {
+    podman run --rm -it \
+      --network=host \
+      --security-opt label=disable \
+      -v "$(pwd)":/workspace \
+      -w /workspace \
+      -v ~/.terraform.d:/root/.terraform.d \
+      $(env | grep -E '^(TF_|AWS_|ARM_)' | sed 's/^/-e /') \
+      docker.io/hashicorp/terraform "$@"
+  }
+  # Pull Azure CLI image if not present
+  podman image exists mcr.microsoft.com/azure-cli || podman pull mcr.microsoft.com/azure-cli
+  # Azure CLI via podman — disables SELinux labeling because relabeling under $HOME is forbidden
+  az() {
+    podman run --rm -it \
+      --network=host \
+      --security-opt label=disable \
+      -v ~/.azure:/root/.azure \
+      -v "$(pwd)":/workspace \
+      -w /workspace \
+      $(env | grep -E '^(AZURE_|ARM_)' | sed 's/^/-e /') \
+      mcr.microsoft.com/azure-cli az "$@"
+  }
+  # Local registry control
+  alias reg-start='systemctl --user start registry'
+  alias reg-stop='systemctl --user stop registry'
+  alias reg-status='systemctl --user status registry'
+  alias reg-ls='curl -s http://localhost:5000/v2/_catalog | python3 -m json.tool'
 fi
 
 alias gst='git status'

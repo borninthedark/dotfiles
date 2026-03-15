@@ -1,0 +1,16 @@
+[Unit]
+Description=Local OCI container registry
+After=network-online.target
+
+[Container]
+Image=docker.io/library/registry:2
+PublishPort=127.0.0.1:5000:5000
+Volume=%h/.local/share/containers/registry-data:/var/lib/registry:z
+Environment=REGISTRY_STORAGE_DELETE_ENABLED=true
+
+[Service]
+ExecStartPre=mkdir -p %h/.local/share/containers/registry-data
+Restart=always
+
+[Install]
+WantedBy=default.target
