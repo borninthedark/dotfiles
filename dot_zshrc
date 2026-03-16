@@ -2,177 +2,62 @@
 # Zsh Configuration (Fedora Sway Atomic)
 #------------------------------------------------------------------------------
 
-#------------------------------------------------------------------------------
-# PATH
-#------------------------------------------------------------------------------
+# --- PATH ---
 [[ -d "$HOME/.local/bin" ]] && export PATH="$HOME/.local/bin:$PATH"
 [[ -d "$HOME/.cargo/bin" ]] && export PATH="$HOME/.cargo/bin:$PATH"
 
-#------------------------------------------------------------------------------
-# History
-#------------------------------------------------------------------------------
+# --- History ---
 HISTSIZE=10000
 SAVEHIST=10000
 HISTFILE="$HOME/.zsh_history"
-setopt HIST_IGNORE_ALL_DUPS
-setopt HIST_REDUCE_BLANKS
-setopt INC_APPEND_HISTORY
-setopt SHARE_HISTORY
+setopt HIST_IGNORE_ALL_DUPS HIST_REDUCE_BLANKS INC_APPEND_HISTORY SHARE_HISTORY
 
-#------------------------------------------------------------------------------
-# Key bindings (Home/End support)
-#------------------------------------------------------------------------------
-# Bind Home and End keys for different terminal emulators
-bindkey '^[[H'    beginning-of-line   # Home
-bindkey '^[[F'    end-of-line         # End
-bindkey '^[[1~'   beginning-of-line   # Home (alternative)
-bindkey '^[[4~'   end-of-line         # End (alternative)
-bindkey '^[[7~'   beginning-of-line   # Home (alternative)
-bindkey '^[[8~'   end-of-line         # End (alternative)
+# --- Key bindings ---
+bindkey '^[[H'  beginning-of-line      # Home
+bindkey '^[[F'  end-of-line            # End
+bindkey '^[[1~' beginning-of-line      # Home (alt)
+bindkey '^[[4~' end-of-line            # End (alt)
+bindkey '^[[7~' beginning-of-line      # Home (alt)
+bindkey '^[[8~' end-of-line            # End (alt)
+bindkey '^[[3~' delete-char            # Delete
+bindkey '^[[5~' up-line-or-history     # Page Up
+bindkey '^[[6~' down-line-or-history   # Page Down
 
-# Additional useful key bindings
-bindkey '^[[3~'   delete-char         # Delete
-bindkey '^[[5~'   up-line-or-history  # Page Up
-bindkey '^[[6~'   down-line-or-history # Page Down
-
-#------------------------------------------------------------------------------
-# Completion
-#------------------------------------------------------------------------------
+# --- Completion ---
 autoload -Uz compinit
 compinit -d "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump" 2>/dev/null
 zstyle ':completion:*' use-cache on
 zstyle ':completion:*' cache-path "${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
 zstyle ':completion:*' menu select
 
-#------------------------------------------------------------------------------
-# Prompt: Starship
-#------------------------------------------------------------------------------
-if command -v starship >/dev/null 2>&1; then
-  eval "$(starship init zsh)"
-fi
-
-#------------------------------------------------------------------------------
-# Optional Zsh enhancements
-#------------------------------------------------------------------------------
-for _zsh_as in \
+# --- Zsh plugins ---
+_source_first() {
+  for f in "$@"; do [[ -r "$f" ]] && source "$f" && return; done
+}
+_source_first \
   /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh \
   /usr/local/share/zsh-autosuggestions/zsh-autosuggestions.zsh \
   "$HOME/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh"
-do
-  [[ -r "$_zsh_as" ]] && source "$_zsh_as" && break
-done
-unset _zsh_as
-
-for _zsh_sh in \
+_source_first \
   /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh \
   /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh \
   "$HOME/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
-do
-  [[ -r "$_zsh_sh" ]] && source "$_zsh_sh" && break
-done
-unset _zsh_sh
+unfunction _source_first
 
 #------------------------------------------------------------------------------
-# Aliases
+# Tool init (order matters: direnv last so it overrides)
 #------------------------------------------------------------------------------
-alias cls='clear'
+command -v starship >/dev/null 2>&1 && eval "$(starship init zsh)"
+command -v zoxide   >/dev/null 2>&1 && eval "$(zoxide init zsh)"
 
-if command -v lsd >/dev/null 2>&1; then
-  alias ls='lsd'
-  alias l='lsd -l'
-  alias la='lsd -a'
-  alias lla='lsd -la'
-  alias lt='lsd --tree'
-fi
+export NVM_DIR="$HOME/.nvm"
+[[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
+[[ -s "$NVM_DIR/bash_completion" ]] && source "$NVM_DIR/bash_completion"
 
-if command -v bat >/dev/null 2>&1; then
-  alias cat='bat --paging=never'
-  alias less='bat'
-  export MANPAGER="sh -c 'col -bx | bat -l man -p'"
-  export BAT_THEME="OneHalfDark"
-elif command -v batcat >/dev/null 2>&1; then
-  alias cat='batcat --paging=never'
-  alias bat='batcat'
-  alias less='batcat'
-fi
+[[ -f "$HOME/.atuin/bin/env" ]] && source "$HOME/.atuin/bin/env"
+command -v atuin >/dev/null 2>&1 && eval "$(atuin init zsh)"
 
-if command -v fastfetch >/dev/null 2>&1; then
-  alias ff='fastfetch --logo fedora_small'
-fi
-
-if command -v direnv >/dev/null 2>&1; then
-  alias da='direnv allow'
-  alias dr='direnv reload'
-  alias ds='direnv status'
-fi
-
-if command -v podman >/dev/null 2>&1; then
-  command -v podman-compose >/dev/null 2>&1 && alias pc='podman-compose'
-  command -v podman-compose >/dev/null 2>&1 && alias pcu='podman-compose up -d'
-  command -v podman-compose >/dev/null 2>&1 && alias pcd='podman-compose down'
-  command -v podman-compose >/dev/null 2>&1 && alias pcl='podman-compose logs -f'
-  alias pps='podman ps'
-  alias ppa='podman ps -a'
-  alias pi='podman images'
-  alias prm='podman rm'
-  alias prmi='podman rmi'
-  # Pull AWS CLI image if not present
-  podman image exists public.ecr.aws/aws-cli/aws-cli || podman pull public.ecr.aws/aws-cli/aws-cli
-  # AWS CLI via podman — disables SELinux labeling because relabeling under $HOME is forbidden
-  aws() {
-    podman run --rm -it \
-      --network=host \
-      --security-opt label=disable \
-      -v ~/.aws:/root/.aws \
-      -v "$(pwd)":/aws \
-      $(env | grep ^AWS_ | sed 's/^/-e /') \
-      public.ecr.aws/aws-cli/aws-cli "$@"
-  }
-  # Pull Terraform image if not present
-  podman image exists docker.io/hashicorp/terraform || podman pull docker.io/hashicorp/terraform
-  # Terraform via podman — disables SELinux labeling because relabeling under $HOME is forbidden
-  terraform() {
-    podman run --rm -it \
-      --network=host \
-      --security-opt label=disable \
-      -v "$(pwd)":/workspace \
-      -w /workspace \
-      -v ~/.terraform.d:/root/.terraform.d \
-      $(env | grep -E '^(TF_|AWS_|ARM_)' | sed 's/^/-e /') \
-      docker.io/hashicorp/terraform "$@"
-  }
-  # Pull Azure CLI image if not present
-  podman image exists mcr.microsoft.com/azure-cli || podman pull mcr.microsoft.com/azure-cli
-  # Azure CLI via podman — disables SELinux labeling because relabeling under $HOME is forbidden
-  az() {
-    podman run --rm -it \
-      --network=host \
-      --security-opt label=disable \
-      -v ~/.azure:/root/.azure \
-      -v "$(pwd)":/workspace \
-      -w /workspace \
-      $(env | grep -E '^(AZURE_|ARM_)' | sed 's/^/-e /') \
-      mcr.microsoft.com/azure-cli az "$@"
-  }
-  # Local registry control
-  alias reg-start='systemctl --user start registry'
-  alias reg-stop='systemctl --user stop registry'
-  alias reg-status='systemctl --user status registry'
-  alias reg-ls='curl -s http://localhost:5000/v2/_catalog | python3 -m json.tool'
-fi
-
-alias gst='git status'
-alias gco='git checkout'
-alias gcm='git commit -m'
-alias gp='git push'
-alias gl='git pull'
-
-if command -v kubectl >/dev/null 2>&1; then
-  alias k='kubectl'
-  alias kgp='kubectl get pods'
-  alias kgs='kubectl get services'
-  alias kgd='kubectl get deployments'
-fi
+command -v direnv >/dev/null 2>&1 && eval "$(direnv hook zsh)"
 
 #------------------------------------------------------------------------------
 # fzf
@@ -184,13 +69,11 @@ if command -v fzf >/dev/null 2>&1; then
     _fzf_preview='sed -n "1,200p" {}'
   fi
   export FZF_DEFAULT_OPTS="--height 40% --layout=reverse --border --preview \"${_fzf_preview}\""
-
   if command -v fd >/dev/null 2>&1; then
     export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
     export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
     export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
   fi
-
   for _fzf in \
     /usr/share/fzf/shell/key-bindings.zsh \
     /usr/share/fzf/shell/completion.zsh \
@@ -203,17 +86,116 @@ if command -v fzf >/dev/null 2>&1; then
 fi
 
 #------------------------------------------------------------------------------
-# direnv hook
+# Aliases
 #------------------------------------------------------------------------------
-if command -v direnv >/dev/null 2>&1; then
-  eval "$(direnv hook zsh)"
+
+# General
+alias cls='clear'
+
+# lsd
+if command -v lsd >/dev/null 2>&1; then
+  alias ls='lsd'  l='lsd -l'  la='lsd -a'  lla='lsd -la'  lt='lsd --tree'
+fi
+
+# bat
+if command -v bat >/dev/null 2>&1; then
+  alias cat='bat --paging=never' less='bat'
+  export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+  export BAT_THEME="OneHalfDark"
+elif command -v batcat >/dev/null 2>&1; then
+  alias cat='batcat --paging=never' bat='batcat' less='batcat'
+fi
+
+# fastfetch
+command -v fastfetch >/dev/null 2>&1 && alias ff='fastfetch --logo fedora_small'
+
+# direnv
+command -v direnv >/dev/null 2>&1 && alias da='direnv allow' dr='direnv reload' ds='direnv status'
+
+# git
+alias gst='git status' gco='git checkout' gcm='git commit -m' gp='git push' gl='git pull'
+
+# kubectl
+if command -v kubectl >/dev/null 2>&1; then
+  alias k='kubectl' kgp='kubectl get pods' kgs='kubectl get services' kgd='kubectl get deployments'
+fi
+
+# distrobox
+if command -v distrobox >/dev/null 2>&1; then
+  alias db='distrobox'
+  alias dbe='distrobox enter'
+  alias dbl='distrobox list'
+  alias dbs='distrobox stop'
+  alias dbrm='distrobox rm'
+  alias dbc='distrobox create'
+fi
+
+# toolbx
+if command -v toolbox >/dev/null 2>&1; then
+  alias tb='toolbox'
+  alias tbe='toolbox enter'
+  alias tbl='toolbox list'
+  alias tbrm='toolbox rm'
+  alias tbc='toolbox create'
+  alias tbr='toolbox run'
 fi
 
 #------------------------------------------------------------------------------
-# zoxide
+# Podman
 #------------------------------------------------------------------------------
-if command -v zoxide >/dev/null 2>&1; then
-  eval "$(zoxide init zsh)"
+if command -v podman >/dev/null 2>&1; then
+  alias pps='podman ps' ppa='podman ps -a' pi='podman images'
+  alias prm='podman rm' prmi='podman rmi'
+
+  if command -v podman-compose >/dev/null 2>&1; then
+    alias pc='podman-compose' pcu='podman-compose up -d'
+    alias pcd='podman-compose down' pcl='podman-compose logs -f'
+  fi
+
+  # Local registry
+  alias reg-start='systemctl --user start registry'
+  alias reg-stop='systemctl --user stop registry'
+  alias reg-status='systemctl --user status registry'
+  alias reg-ls='curl -s http://localhost:5000/v2/_catalog | python3 -m json.tool'
+
+  # CLI wrappers — pull image lazily on first use, not on shell startup
+  aws() {
+    podman image exists public.ecr.aws/aws-cli/aws-cli \
+      || podman pull public.ecr.aws/aws-cli/aws-cli
+    podman run --rm -it \
+      --network=host \
+      --security-opt label=disable \
+      -v ~/.aws:/root/.aws \
+      -v "$(pwd)":/aws \
+      $(env | grep ^AWS_ | sed 's/^/-e /') \
+      public.ecr.aws/aws-cli/aws-cli "$@"
+  }
+
+  terraform() {
+    podman image exists docker.io/hashicorp/terraform \
+      || podman pull docker.io/hashicorp/terraform
+    podman run --rm -it \
+      --network=host \
+      --security-opt label=disable \
+      -v "$(pwd)":/workspace \
+      -w /workspace \
+      -v ~/.terraform.d:/root/.terraform.d \
+      $(env | grep -E '^(TF_|AWS_|ARM_)' | sed 's/^/-e /') \
+      docker.io/hashicorp/terraform "$@"
+  }
+
+  az() {
+    podman image exists mcr.microsoft.com/azure-cli \
+      || podman pull mcr.microsoft.com/azure-cli
+    podman run --rm -it \
+      --network=host \
+      --security-opt label=disable \
+      -v ~/.azure:/root/.azure \
+      -v "$(pwd)":/workspace \
+      -w /workspace \
+      $(env | grep -E '^(AZURE_|ARM_)' | sed 's/^/-e /') \
+      mcr.microsoft.com/azure-cli az "$@"
+  }
 fi
 
 #------------------------------------------------------------------------------
@@ -241,18 +223,3 @@ extract() {
     echo "'$1' is not a valid file"
   fi
 }
-
-#------------------------------------------------------------------------------
-# nvm
-#------------------------------------------------------------------------------
-export NVM_DIR="$HOME/.nvm"
-[[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
-[[ -s "$NVM_DIR/bash_completion" ]] && source "$NVM_DIR/bash_completion"
-
-#------------------------------------------------------------------------------
-# atuin
-#------------------------------------------------------------------------------
-[[ -f "$HOME/.atuin/bin/env" ]] && source "$HOME/.atuin/bin/env"
-if command -v atuin >/dev/null 2>&1; then
-  eval "$(atuin init zsh)"
-fi
