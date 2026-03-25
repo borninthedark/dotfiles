@@ -127,9 +127,7 @@
     "backlight": {
         // "device": "acpi_video1",
         "format": "{percent}% {icon}",
-        // BMP PUA icon — MDI supplementary-plane glyphs have oversized bounding
-        // boxes that inflate Waybar's minimum height via Pango line metrics.
-        "format-icons": ["", "", "", "", ""]
+        "format-icons": ["󰃞", "󰃟", "󰃠", "󰃡", "󰃢"]
     },
     "battery": {
         "states": {
