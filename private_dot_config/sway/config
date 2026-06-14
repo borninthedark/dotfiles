@@ -18,6 +18,8 @@ set $right l
 set $term kitty
 # Lockscreen
 set $lockscreen swaylock
+# wob OSD fifo (created in config.d/95-theme.conf); volume keys write to it
+set $wobsock $SWAYSOCK.wob
 # Your preferred application launcher
 # Note: pass the final command to swaymsg so that the resulting window can be opened
 # on the original workspace that the command was run on.
@@ -54,6 +56,12 @@ output * bg ~/.local/share/wallpapers/default.jpg fill
 # This will lock your screen after 300 seconds of inactivity, then turn off
 # your displays after another 300 seconds, and turn your screens back on when
 # resumed. It will also lock your screen before your computer goes to sleep.
+#
+# Desktop (no battery): lock after 10 min, blank displays after 15 min.
+exec swayidle -w \
+         timeout 600 '$lockscreen -f' \
+         timeout 900 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' \
+         before-sleep '$lockscreen -f'
 
 ### Input configuration
 #
@@ -186,6 +194,19 @@ output * bg ~/.local/share/wallpapers/default.jpg fill
     # If there are multiple scratchpad windows, this command cycles through them.
     bindsym $mod+minus scratchpad show
 #
+# Multimedia keys:
+#
+    # Volume / mute via PipeWire (wpctl); OSD shown through wob ($wobsock)
+    bindsym XF86AudioRaiseVolume exec wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+ && wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{printf "%d\n", $2*100}' > $wobsock
+    bindsym XF86AudioLowerVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%- && wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{printf "%d\n", $2*100}' > $wobsock
+    bindsym XF86AudioMute exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle && (wpctl get-volume @DEFAULT_AUDIO_SINK@ | grep -q MUTED && echo 0 || wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{printf "%d\n", $2*100}') > $wobsock
+    bindsym XF86AudioMicMute exec wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle
+
+    # Media transport via playerctl
+    bindsym XF86AudioPlay exec playerctl play-pause
+    bindsym XF86AudioNext exec playerctl next
+    bindsym XF86AudioPrev exec playerctl previous
+#
 # Resizing containers:
 #
 mode "resize" {
@@ -210,25 +231,15 @@ mode "resize" {
 }
 bindsym $mod+r mode "resize"
 
-# Include configs from 3 locations:
-#  - /usr/share/sway/config.d
-#  - /etc/sway/config.d
-#  - $XDG_CONFIG_HOME/sway/config.d ($HOME/.config/sway/config.d)
 #
-# If multiple directories contain the files with the same name, the later
-# directory takes precedence; `$XDG_CONFIG_HOME/sway/config.d/20-swayidle.conf`
-# will always be loaded instead of `/usr/share/sway/config.d/20-swayidle.conf`
-# or `/etc/sway/config.d/20-swayidle.conf`
+# Status bar:
 #
-# This mechanism permits overriding our default configuration per-system
-# (/etc) or per-user ($XDG_CONFIG_HOME) basis. Just create the file you
-# want to modify/override in the higher-level directory.
-#
-# For example, to disable the default bar from Fedora configs, you'll need to
-#     $ echo -n > "$HOME/.config/sway/config.d/90-bar.conf"
-#
-# Note the quoting, the $() and the arguments quoting. All the parts are equally
-# important to make the magic work. And if you want to learn the secret behind
-# the trick, it's all in the `wordexp(3)`.
-#
-include '$(/usr/libexec/sway/layered-include "/usr/share/sway/config.d/*.conf" "/etc/sway/config.d/*.conf" "${XDG_CONFIG_HOME:-$HOME/.config}/sway/config.d/*.conf")'
+# Use Waybar (config: ~/.config/waybar/config.jsonc). Sway launches and
+# restarts it on reload.
+bar {
+    swaybar_command waybar
+}
+
+# Load per-user drop-in configuration from ~/.config/sway/config.d/*.conf
+# (e.g. 95-theme.conf). Sway expands the glob natively; no helper needed.
+include "${XDG_CONFIG_HOME:-$HOME/.config}/sway/config.d/*.conf"
