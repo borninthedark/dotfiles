@@ -17,7 +17,7 @@
 @define-color kripton-shadow-soft rgba(77, 95, 111, 0.18);
 
 * {
-  font-family: 'Rajdhani', 'Maple Mono NF', FontAwesome, system-ui, monospace;
+  font-family: 'Maple Mono NF', FontAwesome, system-ui, monospace;
   font-size: 13px;
   -gtk-icon-style: symbolic;
 }

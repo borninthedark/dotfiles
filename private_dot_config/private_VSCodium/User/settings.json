@@ -1,0 +1,7 @@
+{
+    "editor.fontFamily": "Maple Mono NF",
+    "editor.fontSize": 24,
+    "terminal.integrated.fontFamily": "Maple Mono NF",
+    "terminal.integrated.fontSize": 16,
+    "workbench.colorTheme": "Maple Dark"
+}
