@@ -1,0 +1,34 @@
+#!/bin/sh
+# power-menu - fuzzel power menu, themed to the waybar "Kripton" palette.
+# Bound to $mod+Shift+e in sway. Same actions as waybar custom/power + Logout.
+# Kripton refs: bg-alt #171a1f, light #E0E0E0, accent #9bbfbf, critical #b72f1d.
+
+chosen=$(printf '%s\n' \
+  '⏻   Shutdown' \
+  '↻   Reboot' \
+  '⏾   Suspend' \
+  '❄   Hibernate' \
+  '󰍃   Logout' \
+  | fuzzel --dmenu \
+      --prompt 'power  ' \
+      --lines 5 \
+      --width 16 \
+      --font 'Maple Mono NF:size=13' \
+      --background 171a1fee \
+      --text-color e0e0e0ff \
+      --match-color 9bbfbfff \
+      --selection-color b72f1dff \
+      --selection-text-color e0e0e0ff \
+      --border-color 9bbfbfaa \
+      --border-width 2 \
+      --border-radius 10) || exit 0
+
+[ -n "$chosen" ] || exit 0
+
+case "$chosen" in
+  *Shutdown)  systemctl poweroff ;;
+  *Reboot)    systemctl reboot ;;
+  *Suspend)   systemctl suspend ;;
+  *Hibernate) systemctl hibernate ;;
+  *Logout)    swaymsg exit ;;
+esac
