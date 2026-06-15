@@ -61,6 +61,7 @@ separator-color=00000000
 # --------------------------------------------------------------------
 # Text
 # --------------------------------------------------------------------
+font=Maple Mono NF
 text-color=E0E0E0
 text-clear-color=7C7D80
 text-caps-lock-color=AA4B1A
