@@ -28,9 +28,18 @@ bindkey '^[[6~' down-line-or-history   # Page Down
 # --- Completion ---
 autoload -Uz compinit
 compinit -d "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump" 2>/dev/null
+setopt COMPLETE_IN_WORD          # complete from where the cursor is, not just word-end
+setopt ALWAYS_TO_END             # move cursor to end after an unambiguous completion
 zstyle ':completion:*' use-cache on
 zstyle ':completion:*' cache-path "${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
 zstyle ':completion:*' menu select
+# Progressive matcher: exact -> case-insensitive -> partial-word (on ._- ) ->
+# substring (match anywhere). This is what enables dir/substring completion.
+zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+zstyle ':completion:*' squeeze-slashes true
+zstyle ':completion:*:*:cd:*' tag-order local-directories directory-stack path-directories
+zstyle ':completion:*:descriptions' format '%F{yellow}-- %d --%f'
 
 # --- Zsh plugins ---
 _source_first() {
@@ -44,6 +53,16 @@ _source_first \
   /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh \
   /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh \
   "$HOME/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+# history-substring-search must be sourced AFTER syntax-highlighting.
+# Gentoo ships the plugin as the (oddly named) site-functions file below.
+if _source_first \
+  /usr/share/zsh/site-functions/_zsh-history-substring-search \
+  /usr/local/share/zsh/site-functions/_zsh-history-substring-search
+then
+  # atuin keeps the arrow keys; substring search lives on Ctrl-P / Ctrl-N.
+  bindkey '^P' history-substring-search-up
+  bindkey '^N' history-substring-search-down
+fi
 unfunction _source_first
 
 #------------------------------------------------------------------------------
@@ -76,13 +95,17 @@ if command -v fzf >/dev/null 2>&1; then
     export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
     export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
   fi
+  # Source the first readable key-bindings file across known layouts.
+  # Gentoo: /usr/share/fzf/key-bindings.zsh (no shell/ subdir); completion
+  # ships as /usr/share/zsh/site-functions/_fzf and is autoloaded by compinit
+  # via fpath, so no completion.zsh needs sourcing here.
   for _fzf in \
+    /usr/share/fzf/key-bindings.zsh \
     /usr/share/fzf/shell/key-bindings.zsh \
-    /usr/share/fzf/shell/completion.zsh \
-    "$HOME/.fzf/shell/key-bindings.zsh" \
-    "$HOME/.fzf/shell/completion.zsh"
+    /usr/share/doc/fzf/examples/key-bindings.zsh \
+    "$HOME/.fzf/shell/key-bindings.zsh"
   do
-    [[ -r "$_fzf" ]] && source "$_fzf"
+    [[ -r "$_fzf" ]] && { source "$_fzf"; break; }
   done
   unset _fzf _fzf_preview
 fi
