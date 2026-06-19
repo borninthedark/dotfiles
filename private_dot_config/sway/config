@@ -205,8 +205,14 @@ exec swayidle -w \
 
     # Media transport via playerctl
     bindsym XF86AudioPlay exec playerctl play-pause
+    bindsym XF86AudioPause exec playerctl play-pause
     bindsym XF86AudioNext exec playerctl next
     bindsym XF86AudioPrev exec playerctl previous
+    bindsym XF86AudioStop exec playerctl stop
+
+    # Screenshots (flameshot) + screen recording (wf-recorder)
+    # Single source of truth lives in the hardening repo.
+    include $HOME/Workspaces/gentoo-hardened-exousia/screen-capture/sway-screen-capture.conf
 #
 # Resizing containers:
 #
