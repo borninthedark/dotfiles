@@ -67,16 +67,19 @@ frame_delimiter = 10
 gradient = 1
 
 # Gradient color scheme
-# Based on GTK dark theme: from cyan accent (#9bbfbf) to blue (#458588)
-gradient_count = 8
-gradient_color_1 = '#9bbfbf'
-gradient_color_2 = '#8bb5b5'
-gradient_color_3 = '#7cabab'
-gradient_color_4 = '#6da2a2'
-gradient_color_5 = '#5e9898'
-gradient_color_6 = '#508e8e'
-gradient_color_7 = '#4a8a8a'
-gradient_color_8 = '#458588'
+# GTK dark theme, deepened for glow: deep blue base (bottom) rising to a
+# bright aqua peak (top). color_1 = bottom of bar, color_10 = peak.
+gradient_count = 10
+gradient_color_1 = '#2a5359'
+gradient_color_2 = '#346069'
+gradient_color_3 = '#3e7178'
+gradient_color_4 = '#458588'
+gradient_color_5 = '#519896'
+gradient_color_6 = '#62aca6'
+gradient_color_7 = '#7cbcb6'
+gradient_color_8 = '#9bbfbf'
+gradient_color_9 = '#bcd9d4'
+gradient_color_10 = '#e0f1ea'
 
 # Foreground color for bars (not used when gradient is enabled)
 foreground = '#9bbfbf'
@@ -91,8 +94,8 @@ integral = 77
 
 # Disables or enables the so-called "Monstercat smoothing" with or without "waves".
 # Set to 0 to disable.
-monstercat = 0
-waves = 0
+monstercat = 1.5
+waves = 1
 
 # This one is tricky. You can have as much keys as you want.
 # Remember to uncomment more than one key! More keys = more precision.
